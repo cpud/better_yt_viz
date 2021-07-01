@@ -35,8 +35,8 @@ Mako==1.1.0
 MarkupSafe==1.1.1
 nbformat==4.4.0
 nltk==3.5
-numpy==1.17.2
-pandas==0.25.1
+numpy==1.21.0
+pandas==1.2.5
 plotly==4.1.1
 psycopg2-binary==2.8.4
 pyrsistent==0.15.4

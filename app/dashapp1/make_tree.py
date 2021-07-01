@@ -28,15 +28,14 @@ def make_df(url):
                         'LikeRatio: ' + stuff['LikeRatio_str'] + '<br>' + 'Length: ' + stuff['Length']
     return stuff
 
-def prepare_tree(stuff):
+def make_tree(stuff):
     layer_lens = []
-    for n in range(len(stuff['Depth'].unique().tolist())):
+    for n in range(1, len(stuff['Depth'].unique().tolist()) + 1):
         layer_lens.append(len(stuff[stuff['Depth'] == n]))
 
     connections = []
     v_label = []
     counter = 0
-    sel_idx = [0]
 
     for i in range(10):
         # get video titles in each layer
@@ -53,25 +52,13 @@ def prepare_tree(stuff):
         counter += layer_lens[i]
         v_label.extend(temp_label)
 
-    return v_label, connections
 
-def make_plot(stuff):
-    #v_label, connections = prepare_tree(videos)
-
-    # make list for coloring the nodes
     coloring = stuff['Depth'].tolist()
-    coloring = [x + 1 for x in coloring]
-
-    #videos.to_csv("data/videos.csv")
-
-    v_label, connections = prepare_tree(stuff)
-
-    # prepare igraph data for plotly as seen in plotly tree graph docs
+    #coloring = [x + 1 for x in coloring]
     nr_vertices = len(v_label)
     g = Graph(connections)
-    #lay = g.layout('fr')
     lay = g.layout('kk')
-    #lay = g.layout('circle')
+    #lay = g.layout('tree')
 
     position = {k: lay[k] for k in range(nr_vertices)}
     Y = [lay[k][1] for k in range(nr_vertices)]
@@ -126,26 +113,22 @@ def make_plot(stuff):
 
     fig.update_xaxes(showticklabels = False)
     fig.update_yaxes(showticklabels = False)
-    fig.update_layout(title = 'Tree Plot')
-
-    fig2, fig3, fig4, fig5 = make_bars(stuff)
-
-    return fig, fig2, fig3, fig4, fig5
+    fig.update_layout(#autosize = False,
+                      #width = 2000,
+                      #height = 1000,
+                      title = 'Tree Plot',)
+    return fig
 
 
 def make_bars(stuff):
-
-    #try:
-    #    videos = pd.read_csv('data/videos.csv')
-    #except:
-    #    videos = pd.read_csv('data/sy.csv')
-
     likes_mean = []
     likes_std = []
     mins_mean = []
     mins_std = []
     views_mean = []
     views_std = []
+    comments_mean = []
+    comments_std = []
     Depths = stuff['Depth'].unique().tolist()
 
     for Depth in Depths:
@@ -156,8 +139,11 @@ def make_bars(stuff):
         mins_std.append(Depth_df['Minutes'].std())
         views_mean.append(Depth_df['Views'].mean())
         views_std.append(Depth_df['Views'].std())
+        comments_mean.append(Depth_df['Comments'].mean())
+        comments_std.append(Depth_df['Comments'].std())
 
-    Depths = [x + 1 for x in Depths]
+
+    #Depths = [x + 1 for x in Depths]
 
     fig2 = go.Figure(data = [
             go.Bar(name = 'mean', x = Depths, y = likes_mean,
@@ -173,7 +159,7 @@ def make_bars(stuff):
                            #font_color = '#3B846D',
                            colorway = ['#3e4989', '#1f9e89'],
                            title = 'Average Video Likes',
-                           xaxis_title="Layer",
+                           xaxis_title="Depth",
                            yaxis_title="Likes",
                            xaxis = dict(
                                 tickmode = 'linear',
@@ -196,12 +182,12 @@ def make_bars(stuff):
                        #font_color = '#3B846D',
                        colorway = ['#26828e', '#6ece58'],
                        title = 'Average Video Length (Minutes)',
-                       xaxis_title="Layer",
+                       xaxis_title="Depth",
                        yaxis_title="Minutes",
                        xaxis = dict(
-                                tickmode = 'linear',
-                                tick0 = 1,
-                                dtick = 1
+                        tickmode = 'linear',
+                        tick0 = 1,
+                        dtick = 1
                             ))
 
 
@@ -219,12 +205,12 @@ def make_bars(stuff):
                        #font_color = '#3B846D',
                        colorway = ['#440154', '#31688e'],
                        title = 'Average Video Views',
-                       xaxis_title="Layer",
+                       xaxis_title="Depth",
                        yaxis_title="Views",
                        xaxis = dict(
-                                tickmode = 'linear',
-                                tick0 = 1,
-                                dtick = 1
+                        tickmode = 'linear',
+                        tick0 = 1,
+                        dtick = 1
                             ))
 
 
@@ -238,10 +224,32 @@ def make_bars(stuff):
                            #colorway = ['#3e4989', '#1f9e89'],
                            title = 'Channel Frequency',
                            #font_size = 9,
-                          # xaxis_title="Channel",
+                           xaxis_title="Channel",
                            yaxis_title="Number of Videos",)
 
-    return fig2, fig3, fig4, fig5
+    fig6= go.Figure(data = [
+        go.Bar(name = 'mean', x = Depths, y = comments_mean,
+              #marker_color = ['#440154', '#3e4989', '#26828e', '#1f9e89', '#6ece58', '#fde725']
+               #marker_color = ['#440154']
+              ),
+        go.Bar(name = 'std', x = Depths, y = comments_std,
+              #marker_color = ['#440154', '#3e4989', '#26828e', '#1f9e89', '#6ece58', '#fde725']
+               #marker_color = ['#1f9e89']
+              ),
+    ])
+    fig6.update_layout(#barmode='group',
+                       #font_color = '#3B846D',
+                       colorway = ['#440154', '#31688e'],
+                       title = 'Average Video Comments',
+                       xaxis_title="Depth",
+                       yaxis_title="Views",
+                       xaxis = dict(
+                        tickmode = 'linear',
+                        tick0 = 1,
+                        dtick = 1
+                            ))
+
+    return fig2, fig3, fig4, fig5, fig6
 
 
 def convert_time(time):

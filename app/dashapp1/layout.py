@@ -110,7 +110,7 @@ layout = html.Div([
     html.Div([
     dash_table.DataTable(
         id = 'table',
-        columns = [{"name": i, "id": i} for i in stuff.columns[:11]],
+        columns = [{"name": i, "id": i} for i in stuff.columns[1:12]],
         #data = stuff.to_dict('records'),
         #data = [],
         style_header={'backgroundColor': 'rgb(30, 30, 30)'},
